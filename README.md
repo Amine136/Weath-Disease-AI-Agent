@@ -90,3 +90,4 @@ The frontend serves on `http://localhost:5173`.
 - The backend expects the model path configured by `MODEL_PATH`.
 - Do not commit real API keys or local `.env` files.
 - Large artifacts like model weights, uploads, and local dependency folders are ignored by Git.
+# Weath-Disease-AI-Agent
