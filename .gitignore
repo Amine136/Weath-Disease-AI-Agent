@@ -1,0 +1,41 @@
+.git/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+backend/venv/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Local data / generated artifacts
+backend/uploads/
+*.log
+logs/
+dist/
+*.local
+
+# Large model and datasets
+*.pth
+*.pt
+*.ckpt
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
