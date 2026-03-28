@@ -1,9 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 
 @layer base {
+  html {
+    @apply bg-[#f3f8ee];
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply text-slate-800 antialiased;
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   }
 }
 
@@ -60,9 +65,9 @@ body.resize-active * {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #c9d7be;
   border-radius: 999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #9bb08d;
 }

@@ -224,18 +224,18 @@ export default function ReportPanel({ report, onClose }) {
   };
 
   return (
-    <div className="w-full shrink-0 border-l border-gray-200 bg-white flex flex-col h-full animate-slide-in">
+    <div className="animate-slide-in flex h-full w-full shrink-0 flex-col border-l border-emerald-100 bg-[#f7fbf3]">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between shrink-0">
+      <div className="flex shrink-0 items-center justify-between border-b border-emerald-100 px-5 py-4">
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">AI Agronomic Report</h2>
-          <p className="text-[11px] text-gray-400 mt-0.5">{today}</p>
+          <h2 className="text-sm font-semibold text-slate-900">AI Agronomic Report</h2>
+          <p className="mt-0.5 text-[11px] text-slate-400">{today}</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {/* PDF button */}
           <button
             onClick={handleExportPdf}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
             title="Export PDF"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -245,7 +245,7 @@ export default function ReportPanel({ report, onClose }) {
           {/* Share button */}
           <button
             onClick={handleShare}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
             title="Share"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -255,7 +255,7 @@ export default function ReportPanel({ report, onClose }) {
           {/* Close button */}
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
             title="Close panel"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -266,7 +266,7 @@ export default function ReportPanel({ report, onClose }) {
       </div>
 
       {actionState.message && (
-        <div className={`mx-4 mt-3 rounded-lg border px-3 py-2 text-xs ${
+        <div className={`mx-5 mt-4 rounded-2xl border px-3 py-2 text-xs ${
           actionState.type === "error"
             ? "border-red-200 bg-red-50 text-red-700"
             : "border-green-200 bg-green-50 text-green-700"
@@ -276,7 +276,7 @@ export default function ReportPanel({ report, onClose }) {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+      <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-5">
         <DiagnosisCard
           diagnosis={report.diagnosis}
           confidence={report.confidence}
