@@ -19,21 +19,54 @@ Wheat Disease AI Agent is a full-stack application for wheat leaf diagnosis and 
 ## Project Structure
 
 ```text
-backend/    FastAPI app, model loading, LangGraph agent
-frontend/   React + Vite UI
-test_images/ Sample images for local testing
+backend/      FastAPI app, model loading, LangGraph agent
+frontend/     React + Vite UI
+test_images/  Sample images for local testing
 ```
 
 ## Requirements
 
+- Git
 - Python 3.12
-- Node.js 22+ for the frontend
-- A trained model file, for example `best_wheat_efficientnet.pth`
+- Node.js 22+
+- npm
+- A trained model file such as `best_wheat_efficientnet.pth`
 - Gemini and Tavily API keys
 
-## Backend Setup
+## 1. Download The Project
 
-Create `backend/.env` from `backend/.env.example` and set your values:
+Clone the repository:
+
+```bash
+git clone https://github.com/Amine136/Weath-Disease-AI-Agent.git
+cd Weath-Disease-AI-Agent
+```
+
+If you downloaded the project as a ZIP instead:
+
+1. Extract the archive.
+2. Open a terminal in the extracted `Weath-Disease-AI-Agent` folder.
+
+## 2. Prepare The Model File
+
+Make sure the trained model file is present in the project root:
+
+```text
+best_wheat_efficientnet.pth
+```
+
+If your model file is stored somewhere else, update `MODEL_PATH` in `backend/.env`.
+
+## 3. Configure The Backend Environment
+
+Create the backend environment file from the example:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edit `backend/.env` and set your values:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
@@ -41,53 +74,97 @@ TAVILY_API_KEY=your_tavily_api_key
 MODEL_PATH=../best_wheat_efficientnet.pth
 ```
 
-Install dependencies:
+## 4. Install Backend Dependencies
+
+From the `backend` directory:
 
 ```bash
-cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Run the backend:
+## 5. Run The Backend
+
+Still in the `backend` directory:
 
 ```bash
-cd backend
+source venv/bin/activate
 python main.py
 ```
 
-The backend serves on `http://localhost:8000`.
+The backend runs on:
 
-## Frontend Setup
+```text
+http://localhost:8000
+```
 
-Install dependencies:
+Health check:
+
+```bash
+curl http://localhost:8000/api/health
+```
+
+You should get a JSON response showing the API is running.
+
+## 6. Install Frontend Dependencies
+
+Open a second terminal, return to the project root, then enter the frontend:
 
 ```bash
 cd frontend
 npm install
 ```
 
-Run the frontend:
+## 7. Run The Frontend
+
+From the `frontend` directory:
 
 ```bash
-cd frontend
 npm run dev -- --host 0.0.0.0
 ```
 
-The frontend serves on `http://localhost:5173`.
+The frontend runs on:
 
-## Usage
+```text
+http://localhost:5173
+```
 
-1. Open the frontend in the browser.
+## 8. Use The Application
+
+1. Open `http://localhost:5173` in your browser.
 2. Optionally adjust latitude and longitude in the chat composer.
 3. Upload a wheat image or ask a question.
 4. Review the generated agronomic report.
 5. Export the report as PDF or share it from the report panel.
+
+## Quick Start Summary
+
+If your machine already has Python, Node.js, npm, Git, the model file, and API keys ready, the full flow is:
+
+```bash
+git clone https://github.com/Amine136/Weath-Disease-AI-Agent.git
+cd Weath-Disease-AI-Agent
+
+cd backend
+cp .env.example .env
+# edit .env with your keys
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+In a second terminal:
+
+```bash
+cd Weath-Disease-AI-Agent/frontend
+npm install
+npm run dev -- --host 0.0.0.0
+```
 
 ## Notes
 
 - The backend expects the model path configured by `MODEL_PATH`.
 - Do not commit real API keys or local `.env` files.
 - Large artifacts like model weights, uploads, and local dependency folders are ignored by Git.
-# Weath-Disease-AI-Agent
