@@ -34,6 +34,7 @@ dist/
 *.pth
 *.pt
 *.ckpt
+!best_wheat_efficientnet.pth
 
 # OS / editors
 .DS_Store
