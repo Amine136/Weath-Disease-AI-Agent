@@ -172,6 +172,21 @@ Reply ONLY with valid JSON: {{"next": "...", "reasoning": "..."}}"""
 def supervisor_node(state: AgentState) -> dict:
     """Route the user's message to the appropriate agent."""
     last_user_msg = state["messages"][-1].content
+    last_user_text = extract_content(last_user_msg)
+
+    has_image_path = bool(
+        re.search(r"/[\w./\-]+\.(?:jpg|jpeg|png)", last_user_text, re.IGNORECASE)
+    )
+
+    # If the session already contains a diagnosis/report and the user is asking
+    # a follow-up without a new image, force a direct conversational answer.
+    if not has_image_path and (
+        state.get("detected_disease", "")
+        or state.get("diagnostic_report", "")
+        or state.get("treatment_report", "")
+    ):
+        print("\n🧭 Supervisor → [direct] | Follow-up in existing report session without new image\n")
+        return {"next_step": "direct"}
 
     # Also feed conversation history summary to the router for context
     history_summary = ""
@@ -185,7 +200,7 @@ def supervisor_node(state: AgentState) -> dict:
     router_llm = llm.with_structured_output(RouterDecision)
     decision = router_llm.invoke([
         SystemMessage(content=SUPERVISOR_PROMPT),
-        HumanMessage(content=extract_content(last_user_msg) + history_summary),
+        HumanMessage(content=last_user_text + history_summary),
     ])
     print(f"\n🧭 Supervisor → [{decision.next}] | {decision.reasoning}\n")
     return {"next_step": decision.next}
@@ -332,11 +347,37 @@ def direct_answer_node(state: AgentState) -> dict:
     if prev_treat:
         context_parts.append(f"Treatment report summary available in memory.")
 
+    if prev_diag:
+        context_parts.append(
+            f"Previous diagnosis confidence: {_extract_confidence(prev_diag):.1f}%"
+        )
+
+    if prev_treat:
+        weather = _extract_weather(prev_treat)
+        treatment_items = _extract_treatments(prev_treat)[:3]
+        prevention_items = _extract_prevention(prev_treat)[:2]
+
+        context_parts.append(
+            "Latest weather context: "
+            f"{weather['temp_c']:.1f}C, {weather['wind_kmh']:.1f} km/h wind, "
+            f"{weather['rain_mm']:.1f} mm rain, spray safe: {weather['spray_safe']}"
+        )
+
+        if treatment_items:
+            context_parts.append(
+                "Previously recommended treatments: "
+                + "; ".join(item["label"] for item in treatment_items)
+            )
+
+        if prevention_items:
+            context_parts.append(
+                "Previously recommended prevention steps: "
+                + "; ".join(prevention_items)
+            )
+
     session_context = ""
     if context_parts:
         session_context = "\n\nSESSION CONTEXT (from earlier in this conversation):\n" + "\n".join(context_parts)
-        session_context += f"\n\nDiagnostic Report:\n{prev_diag[:500]}" if prev_diag else ""
-        session_context += f"\n\nTreatment Report:\n{prev_treat[:500]}" if prev_treat else ""
 
     system_content = f"""You are a specialized AI assistant for wheat crop health. You can:
     - Diagnose 14 wheat conditions from leaf images (diseases, pests, or healthy)
@@ -349,6 +390,9 @@ def direct_answer_node(state: AgentState) -> dict:
     3. Mention your wheat-only scope ONCE per session at most.
     4. Match the user's energy — short questions get short answers.
     5. If the user asks about a previous report, answer based on the session context and conversation history — be SPECIFIC, reference the actual disease name and findings, don't be generic.
+    6. For follow-up questions after a diagnosis or treatment report, answer ONLY the part the user asked about. DO NOT regenerate or paste the full report unless the user explicitly asks for the full report.
+    7. If the user asks for other treatment options, give a short list of alternatives with brief tradeoffs, not a full report.
+    8. Never start a follow-up answer with "AI AGRONOMIC REPORT" unless the user explicitly asks you to regenerate the full report.
     {session_context}"""
 
     response = llm.invoke([

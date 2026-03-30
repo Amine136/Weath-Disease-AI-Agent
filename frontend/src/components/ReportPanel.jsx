@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import DiagnosisCard from "./DiagnosisCard";
 import WeatherStrip from "./WeatherStrip";
-import TreatmentList from "./TreatmentList";
 
 function sanitizePdfText(text) {
   return String(text)
@@ -113,11 +112,182 @@ function buildPdf(reportText) {
   return new Blob([pdf], { type: "application/pdf" });
 }
 
+function cleanReportLine(line) {
+  return String(line)
+    .replace(/^#+\s*/, "")
+    .replace(/\*\*/g, "")
+    .replace(/^\*\s*/, "")
+    .replace(/^[•-]\s*/, "")
+    .trim();
+}
+
+function extractDiagnosticHighlights(report) {
+  const source = report.fullReport || report.summary || "";
+  const lines = source
+    .split("\n")
+    .map(cleanReportLine)
+    .filter(Boolean);
+
+  const highlights = [];
+  let inDiagnosisBlock = false;
+
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+
+    if (
+      lower.includes("treatment plan") ||
+      lower.includes("immediate interventions") ||
+      lower.includes("prevention") ||
+      lower.includes("cultural & long-term management")
+    ) {
+      break;
+    }
+
+    if (
+      lower.includes("diagnosis") ||
+      lower.includes("risk assessment") ||
+      lower.includes("environmental") ||
+      lower.includes("field context") ||
+      lower.includes("visual indicators") ||
+      lower.includes("primary risks")
+    ) {
+      inDiagnosisBlock = true;
+      continue;
+    }
+
+    if (!inDiagnosisBlock) {
+      continue;
+    }
+
+    if (line.length > 6) {
+      highlights.push(line);
+    }
+
+    if (highlights.length >= 5) {
+      break;
+    }
+  }
+
+  return highlights;
+}
+
+function normalizeReportText(text) {
+  return String(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/^\s*---+\s*$/gm, "")
+    .trim();
+}
+
+function extractSectionText(source, sectionName, stopNames = []) {
+  const text = normalizeReportText(source);
+  if (!text) return "";
+
+  const lines = text.split("\n");
+  const target = sectionName.toLowerCase();
+  const stops = stopNames.map((item) => item.toLowerCase());
+
+  let collecting = false;
+  const collected = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    const lower = line.toLowerCase();
+
+    if (!collecting) {
+      if (lower === target || lower.includes(target)) {
+        collecting = true;
+      }
+      continue;
+    }
+
+    if (
+      stops.some((stop) => lower === stop || lower.includes(stop)) ||
+      lower.startsWith("ai agronomic report") ||
+      lower.startsWith("date:")
+    ) {
+      break;
+    }
+
+    collected.push(rawLine);
+  }
+
+  return collected.join("\n").trim();
+}
+
+function splitParagraphs(text) {
+  return normalizeReportText(text)
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+}
+
+function RichReportSection({ title, text, fallbackItems = [] }) {
+  const paragraphs = splitParagraphs(text);
+
+  return (
+    <div className="rounded-3xl border border-emerald-100 bg-white/90 p-5 shadow-sm">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        {title}
+      </p>
+
+      {paragraphs.length > 0 ? (
+        <div className="space-y-3">
+          {paragraphs.map((paragraph, index) => (
+            <div key={`${title}-${index}`} className="rounded-2xl bg-emerald-50/50 px-4 py-3">
+              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                {paragraph}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <ul className="space-y-2.5">
+          {fallbackItems.map((item, index) => {
+            const label = typeof item === "string" ? item : item.label;
+            return (
+              <li key={`${title}-fallback-${index}`} className="flex items-start gap-3 rounded-2xl bg-emerald-50/50 px-3 py-2.5">
+                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <span className="text-sm leading-relaxed text-slate-700">{label}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function ReportPanel({ report, onClose }) {
   if (!report) return null;
 
   const [actionState, setActionState] = useState({ type: "", message: "" });
   const actionTimerRef = useRef(null);
+  const diagnosticHighlights = useMemo(
+    () => extractDiagnosticHighlights(report),
+    [report],
+  );
+  const fullReportText = report.fullReport || report.summary || "";
+  const treatmentSection = useMemo(
+    () =>
+      extractSectionText(fullReportText, "Treatment Plan", [
+        "Prevention",
+      ]) ||
+      extractSectionText(fullReportText, "Immediate Interventions", [
+        "Cultural & Long-Term Management",
+        "Prevention",
+      ]),
+    [fullReportText],
+  );
+  const preventionSection = useMemo(
+    () =>
+      extractSectionText(fullReportText, "Prevention", []) ||
+      extractSectionText(fullReportText, "Cultural & Long-Term Management", [
+        "Operational Safety",
+      ]),
+    [fullReportText],
+  );
 
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
@@ -277,6 +447,25 @@ export default function ReportPanel({ report, onClose }) {
 
       {/* Content */}
       <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-5">
+        <div className="rounded-3xl border border-emerald-100 bg-white/90 p-5 shadow-sm">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Diagnostic Conclusion
+          </p>
+          <p className="text-sm leading-7 text-slate-700">
+            {report.summary}
+          </p>
+          {diagnosticHighlights.length > 0 && (
+            <ul className="mt-4 space-y-2.5">
+              {diagnosticHighlights.map((item, index) => (
+                <li key={`${item}-${index}`} className="flex items-start gap-3 rounded-2xl bg-emerald-50/50 px-3 py-2.5">
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                  <span className="text-sm leading-relaxed text-slate-700">{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <DiagnosisCard
           diagnosis={report.diagnosis}
           confidence={report.confidence}
@@ -285,16 +474,16 @@ export default function ReportPanel({ report, onClose }) {
 
         <WeatherStrip weather={report.weather} />
 
-        <TreatmentList
+        <RichReportSection
           title="Treatment Plan"
-          items={report.treatment}
-          mode="treatment"
+          text={treatmentSection}
+          fallbackItems={report.treatment || []}
         />
 
-        <TreatmentList
+        <RichReportSection
           title="Prevention"
-          items={report.prevention}
-          mode="prevention"
+          text={preventionSection}
+          fallbackItems={report.prevention || []}
         />
       </div>
     </div>
