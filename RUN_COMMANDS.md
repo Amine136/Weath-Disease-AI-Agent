@@ -7,11 +7,18 @@ This project has two parts that run separately:
 
 ## 1. Backend setup
 
-From the project root:
+From the project root on Linux or macOS:
 
 ```bash
 cd backend
 cp .env.example .env
+```
+
+From the project root on Windows PowerShell:
+
+```powershell
+cd backend
+Copy-Item .env.example .env
 ```
 
 Edit `backend/.env` and set:
@@ -22,7 +29,7 @@ TAVILY_API_KEY=your_tavily_api_key
 MODEL_PATH=../best_wheat_efficientnet.pth
 ```
 
-Then install backend dependencies:
+Then install backend dependencies on Linux or macOS:
 
 ```bash
 cd backend
@@ -31,11 +38,30 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Install backend dependencies on Windows PowerShell:
+
+```powershell
+cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
 ## 2. Run backend
+
+Linux or macOS:
 
 ```bash
 cd backend
 source venv/bin/activate
+python main.py
+```
+
+Windows PowerShell:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
 python main.py
 ```
 
@@ -75,7 +101,7 @@ http://localhost:5173
 
 ## Quick start
 
-If everything is already installed:
+If everything is already installed on Linux or macOS:
 
 ```bash
 cd backend
@@ -86,6 +112,21 @@ python main.py
 In another terminal:
 
 ```bash
+cd frontend
+npm run dev -- --host 0.0.0.0
+```
+
+If everything is already installed on Windows PowerShell:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
+python main.py
+```
+
+In another PowerShell terminal:
+
+```powershell
 cd frontend
 npm run dev -- --host 0.0.0.0
 ```

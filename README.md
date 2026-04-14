@@ -59,11 +59,18 @@ If your model file is stored somewhere else, update `MODEL_PATH` in `backend/.en
 
 ## 3. Configure The Backend Environment
 
-Create the backend environment file from the example:
+Create the backend environment file from the example on Linux or macOS:
 
 ```bash
 cd backend
 cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+cd backend
+Copy-Item .env.example .env
 ```
 
 Edit `backend/.env` and set your values:
@@ -76,7 +83,7 @@ MODEL_PATH=../best_wheat_efficientnet.pth
 
 ## 4. Install Backend Dependencies
 
-From the `backend` directory:
+From the `backend` directory on Linux or macOS:
 
 ```bash
 python3 -m venv venv
@@ -84,12 +91,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+From the `backend` directory on Windows PowerShell:
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
 ## 5. Run The Backend
 
-Still in the `backend` directory:
+Still in the `backend` directory on Linux or macOS:
 
 ```bash
 source venv/bin/activate
+python main.py
+```
+
+On Windows PowerShell:
+
+```powershell
+.\venv\Scripts\Activate.ps1
 python main.py
 ```
 
@@ -142,6 +164,8 @@ http://localhost:5173
 
 If your machine already has Python, Node.js, npm, Git, the model file, and API keys ready, the full flow is:
 
+Linux or macOS:
+
 ```bash
 git clone https://github.com/Amine136/Weath-Disease-AI-Agent.git
 cd Weath-Disease-AI-Agent
@@ -163,8 +187,32 @@ npm install
 npm run dev -- --host 0.0.0.0
 ```
 
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Amine136/Weath-Disease-AI-Agent.git
+cd Weath-Disease-AI-Agent
+
+cd backend
+Copy-Item .env.example .env
+# edit .env with your keys
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main.py
+```
+
+In a second PowerShell terminal:
+
+```powershell
+cd Weath-Disease-AI-Agent\frontend
+npm install
+npm run dev -- --host 0.0.0.0
+```
+
 ## Notes
 
 - The backend expects the model path configured by `MODEL_PATH`.
 - Do not commit real API keys or local `.env` files.
 - Large artifacts like model weights, uploads, and local dependency folders are ignored by Git.
+- On Windows, use `python` instead of `python3`, `Copy-Item` instead of `cp`, and `.\venv\Scripts\Activate.ps1` instead of `source venv/bin/activate`.
